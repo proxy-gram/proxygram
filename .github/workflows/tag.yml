@@ -29,7 +29,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.GH_PAT }}
 
       - uses: actions/setup-node@v3
         with:
@@ -46,7 +46,7 @@ jobs:
 
       - name: 'Build images'
         env:
-          INPUT_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          INPUT_GITHUB_TOKEN: ${{ secrets.GH_PAT }}
           PACKAGE_NAME: ${{ env.PACKAGE_NAME }}
           PACKAGE_VERSION: ${{ env.PACKAGE_VERSION }}
           INPUT_TAGS: type=raw,value=${{ env.PACKAGE_VERSION }}
