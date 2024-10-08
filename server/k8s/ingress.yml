@@ -1,0 +1,51 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: proxygram-server
+  annotations:
+    cert-manager.io/cluster-issuer: cf-issuer
+  labels:
+    app: proxygram-server
+spec:
+  ingressClassName: public
+  rules:
+    - host: "*.proxygr.am"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: proxygram-server
+                port:
+                  number: 80
+  tls:
+    - hosts:
+        - "*.proxygr.am"
+      secretName: tls-proxygram-server
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: proxygram-server-http01
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-microk8s
+  labels:
+    app: proxygram-server
+spec:
+  ingressClassName: public
+  rules:
+    - host: proxygr.am
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: proxygram-server
+                port:
+                  number: 80
+  tls:
+    - hosts:
+        - proxygr.am
+      secretName: tls-proxygram-server-http01

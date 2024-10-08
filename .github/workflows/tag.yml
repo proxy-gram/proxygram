@@ -1,0 +1,55 @@
+name: tag.yml
+on:
+  push:
+    tags:
+      - "*@[0-9]+.[0-9]+.[0-9]+"
+jobs:
+  build-with-docker-engine:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: before_script
+        run: |
+          TAG=$(echo $GITHUB_REF | cut -d'/' -f3)
+          PACKAGE_NAME=$(echo $TAG | cut -d'@' -f1)
+          PACKAGE_VERSION=$(echo $TAG | cut -d'@' -f2)
+          echo "PACKAGE_NAME=$PACKAGE_NAME" >> $GITHUB_ENV
+          echo "PACKAGE_VERSION=$PACKAGE_VERSION" >> $GITHUB_ENV
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@v3
+        with:
+          cache: 'npm'
+          node-version-file: '.nvmrc'
+
+      - name: 'Install Dependencies'
+        run: npm install
+
+      - name: Derive appropriate SHAs for base and head for `nx affected` commands
+        uses: nrwl/nx-set-shas@v3
+        with:
+          main-branch-name: master
+
+      - name: 'Build images'
+        env:
+          INPUT_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PACKAGE_NAME: ${{ env.PACKAGE_NAME }}
+          PACKAGE_VERSION: ${{ env.PACKAGE_VERSION }}
+          INPUT_TAGS: type=raw,value=${{ env.PACKAGE_VERSION }}
+          NX_NO_CLOUD: true
+        run: npx nx run ${{env.PACKAGE_NAME}}:container --verbose
+
