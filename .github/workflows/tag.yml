@@ -54,7 +54,7 @@ jobs:
         run: npx nx run ${{env.PACKAGE_NAME}}:container --verbose
 
       - name: Update k8s deployment
-        run: ./scripts/update-k8s-deployment.sh
+        run: ./scripts/update-image-version.sh
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v7
