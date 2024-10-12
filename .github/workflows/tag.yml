@@ -66,5 +66,5 @@ jobs:
           base: master
           token: ${{ secrets.GH_PAT }}
           delete-branch: true
-          barnch: "chore/release-${{ env.PACKAGE_NAME }}-${{ env.PACKAGE_VERSION }}"
+          branch: "chore/release-${{ env.PACKAGE_NAME }}-${{ env.PACKAGE_VERSION }}"
 
