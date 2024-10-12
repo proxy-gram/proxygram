@@ -1,0 +1,24 @@
+configs:
+  repositories:
+    gitrepo:
+      url: https://github.com/proxy-gram/proxygram.git
+      type: git
+      username: omics42
+      password: ""
+global:
+  domain: argocd.proxygr.am
+server:
+  ingress:
+    enabled: true
+    hosts:
+      - argocd.proxygr.am
+    paths:
+      - /
+    tls:
+      - secretName: argocd-tls
+        hosts:
+          - argocd.proxygr.am
+    annotations:
+      nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
+      nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+      cert-manager.io/cluster-issuer: letsencrypt-microk8s

@@ -53,3 +53,11 @@ jobs:
           NX_NO_CLOUD: true
         run: npx nx run ${{env.PACKAGE_NAME}}:container --verbose
 
+      - name: Update k8s deployment
+        run: ./scripts/update-k8s-deployment.sh
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          commit-message: "chore(release): release ${{ env.PACKAGE_NAME }}@${{ env.PACKAGE_VERSION }}"
+
