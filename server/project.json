@@ -72,7 +72,7 @@
         "push": true,
         "metadata": {
           "images": [
-            "ghcr.io/proxy-gram/proxygram-server"
+            "ghcr.io/proxy-gram/server"
           ],
           "tags": [
             "type=semver,pattern={{version}}"
