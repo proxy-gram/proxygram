@@ -54,7 +54,9 @@ jobs:
         run: npx nx run ${{env.PACKAGE_NAME}}:container --verbose
 
       - name: Update k8s deployment
-        run: ./scripts/update-image-version.js
+        run: |
+          ./scripts/update-image-version.js
+          git status
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v7
@@ -63,4 +65,6 @@ jobs:
           commit-message: "chore(release): release ${{ env.PACKAGE_NAME }}@${{ env.PACKAGE_VERSION }}"
           base: master
           token: ${{ secrets.GH_PAT }}
+          delete-branch: true
+          barnch: "chore/release-${{ env.PACKAGE_NAME }}-${{ env.PACKAGE_VERSION }}"
 
