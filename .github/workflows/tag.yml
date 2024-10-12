@@ -59,6 +59,7 @@ jobs:
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v7
         with:
+          title: "chore(release): release ${{ env.PACKAGE_NAME }}@${{ env.PACKAGE_VERSION }}"
           commit-message: "chore(release): release ${{ env.PACKAGE_NAME }}@${{ env.PACKAGE_VERSION }}"
           base: master
           token: ${{ secrets.GH_PAT }}
