@@ -53,3 +53,6 @@ jobs:
           NX_NO_CLOUD: true
         run: npx nx run ${{env.PACKAGE_NAME}}:container --verbose
 
+      - name: Update k8s deployment
+        run: |
+          sed -i "s|image: ghcr.io/proxy-gram/${{env.PACKAGE_NAME}}:.*|image: ghcr.io/proxy-gram/${{env.PACKAGE_NAME}}:${{env.PACKAGE_VERSION}}|g" server/k8s/deployment.yml

@@ -1,0 +1,23 @@
+repositories:
+  - name: argo
+    url: https://argoproj.github.io/argo-helm
+  - name: sealed-secrets
+    url: https://bitnami-labs.github.io/sealed-secrets/
+
+releases:
+  - name: argo-cd
+    namespace: argocd
+    chart: argo/argo-cd
+    version: 7.6.8
+    values:
+      - argo-cd.values.yaml
+      - configs:
+          repositories:
+            gitrepo:
+              password: {{ requiredEnv "GITHUB_TOKEN" }}
+  - name: sealed-secrets
+    namespace: kube-system
+    chart: sealed-secrets/sealed-secrets
+    version: 2.16.1
+    values:
+      - namespace: kube-system
