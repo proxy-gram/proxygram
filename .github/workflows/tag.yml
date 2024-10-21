@@ -45,7 +45,7 @@ jobs:
       - name: 'Build images'
         env:
           INPUT_GITHUB_TOKEN: ${{ secrets.GH_PAT }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          YARN_NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           PACKAGE_VERSION: ${{ env.PACKAGE_VERSION }}
           INPUT_TAGS: type=raw,value=${{ env.PACKAGE_VERSION }}
           NX_NO_CLOUD: true
