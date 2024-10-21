@@ -1,10 +1,10 @@
 import { get } from 'env-var';
 
 export const config = {
-  proxygramToken: get('TTUNNEL_TOKEN').asString(),
-  proxygramHost: get('TTUNNEL_HOST').default('proxygram.com').asString(),
-  proxygramPort: get('TTUNNEL_PORT').default(80).asPortNumber(),
-  proxygramVhosts: get('TTUNNEL_VHOSTS').asArray(','),
+  proxygramToken: get('PROXYGRAM_TOKEN').asString(),
+  proxygramHost: get('PROXYGRAM_HOST').default('proxygr.am').asString(),
+  proxygramPort: get('PROXYGRAM_PORT').default(80).asPortNumber(),
+  proxygramVhosts: get('PROXYGRAM_VHOSTS').asArray(','),
 };
 
 export type VhostsConfig = {

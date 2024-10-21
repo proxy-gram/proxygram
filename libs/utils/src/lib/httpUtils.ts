@@ -87,8 +87,8 @@ export function proxyRequest({
         }
       });
       vhostSocket.on('end', () => {
-        logger.debug(`Ending connection`);
-        socket.end();
+        logger.debug(`Vhost: Ending connection`);
+        // socket.end();
         vhostSocket.removeAllListeners('data');
         resolve();
       });
@@ -140,10 +140,12 @@ export class Vhost {
 }
 
 export function createHandshake(token: string, subdomains: string[]) {
-  return `${TtunnelProtocol.HANDSHAKE}/${token}/${subdomains.join(',')}`;
+  return `${ProxygramProtocol.HANDSHAKE}/${token}/${subdomains.join(',')}`;
 }
 
 export function parseHandshake(handshake: string, cypher: Cypher) {
+  assert(handshake.startsWith(ProxygramProtocol.HANDSHAKE), "Invalid handshake");
+
   const [_, token, subdomainsStr] = handshake.split('/');
   assert(token, 'Token is required');
 
@@ -157,15 +159,16 @@ export function parseHandshake(handshake: string, cypher: Cypher) {
     throw new Error('Failed to decrypt token');
   }
 
-  if (subdomains.some((s) => !s.endsWith(`.${username}`))) {
+
+  if (subdomains.some((s) => !s.endsWith(`-${username}`))) {
     throw new Error('Invalid subdomains');
   }
 
   return { token, subdomains, username };
 }
 
-export enum TtunnelProtocol {
-  HANDSHAKE = 'TTUNNEL_HANDSHAKE',
-  KEEPALIVE = 'TTUNNEL_KEEPALIVE',
-  INVALID_HANDSHAKE = 'TTUNNEL_INVALID_HANDSHAKE',
+export enum ProxygramProtocol {
+  HANDSHAKE = 'PROXYGRAM_HANDSHAKE',
+  KEEPALIVE = 'PROXYGRAM_KEEPALIVE',
+  INVALID_HANDSHAKE = 'PROXYGRAM_INVALID_HANDSHAKE',
 }

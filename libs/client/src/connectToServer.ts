@@ -3,7 +3,7 @@ import { connect } from 'node:net';
 import {
   createHandshake,
   proxyRequest,
-  TtunnelProtocol,
+  ProxygramProtocol,
   Vhost,
   VhostStore,
 } from '@proxygram/utils';
@@ -35,6 +35,7 @@ export function connectToServer({
   });
   const subdomains = vhostsConfig.map((vhost) => vhost.subdomain);
   const handshake = createHandshake(proxygramToken, subdomains);
+  logger.info(handshake);
 
   const connection = connect(
     {
@@ -46,10 +47,10 @@ export function connectToServer({
     () => {
       connection.write(handshake);
       connection.on('data', (data) => {
-        if (data.toString().startsWith(TtunnelProtocol.KEEPALIVE)) {
+        if (data.toString().startsWith(ProxygramProtocol.KEEPALIVE)) {
           logger.debug('Server is alive!');
         } else if (
-          data.toString().startsWith(TtunnelProtocol.INVALID_HANDSHAKE)
+          data.toString().startsWith(ProxygramProtocol.INVALID_HANDSHAKE)
         ) {
           logger.error('Handshake error:', data.toString());
           connection.destroy();

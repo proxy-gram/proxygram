@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: proxygram-bot
+  labels:
+    app: proxygram-bot
+spec:
+  selector:
+    matchLabels:
+      app: proxygram-bot
+  template:
+    metadata:
+      labels:
+        app: proxygram-bot
+    spec:
+      containers:
+        - name: proxygram-server
+          image: ghcr.io/proxy-gram/bot:0.0.19
+          imagePullPolicy: Always
+          envFrom:
+            - secretRef:
+                name: proxygram-bot-env-secret
+      restartPolicy: Always
+      imagePullSecrets:
+        - name: ghcr-login-secret

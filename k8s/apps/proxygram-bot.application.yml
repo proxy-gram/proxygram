@@ -1,0 +1,14 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: proxygram-bot
+  namespace: argocd
+spec:
+  destination:
+    namespace: default
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    path: bot/k8s
+    repoURL: https://github.com/proxy-gram/proxygram.git
+    targetRevision: HEAD

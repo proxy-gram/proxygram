@@ -12,14 +12,14 @@ program
   .command('proxygram', { isDefault: true, hidden: true })
   .version('0.0.1')
   .description('Cli tool for tunneling local services to the internet')
-  .option('-t, --token <token>', 'Ttunnel token')
+  .option('-t, --token <token>', 'Proxygram token')
   .option(
     '-H, --vhost <vhost...>',
-    'Ttunnel virtual host in the format {subdomain.username:port}',
+    'Proxygram virtual host in the format {subdomain-username:port}',
     (value, previous) => {
-      if (!/^\w+\.\w+:\d{0,5}$/.test(value)) {
+      if (!/^\w+-\w+:\d{0,5}$/.test(value)) {
         throw new InvalidOptionArgumentError(
-          'Vhost must be in the format {subdomain.username:port}, e.g. example.omics42:3000. No nested subdomains are allowed.'
+          'Vhost must be in the format {subdomain-username:port}, e.g. example-omics42:3000. No nested subdomains are allowed.'
         );
       }
       logger.debug('Host value: %o', value);
@@ -32,18 +32,19 @@ program
     const proxygramToken = args.token ?? config.proxygramToken;
     if (!proxygramToken) {
       logger.error(
-        'Token is required, please provide it with the -t flag or the TTUNNEL_TOKEN environment variable'
+        'Token is required, please provide it with the -t flag or the PROXYGRAM_TOKEN environment variable'
       );
       process.exit(1);
     }
-    const host = args.vhost ?? config.proxygramVhosts;
-    if (!host?.length) {
+    const vhosts = args.vhost?.length ? args.vhost : config.proxygramVhosts;
+
+    if (!vhosts?.length) {
       logger.error(
-        'Host is required, please provide it with the -H flag or the TTUNNEL_VHOSTS environment variable'
+        'VHosts are required, please provide them with the -H flag or the PROXYGRAM_VHOSTS environment variable'
       );
       process.exit(1);
     }
-    const vhostsConfig: VhostsConfig = host.map((vhost) => {
+    const vhostsConfig: VhostsConfig = vhosts.map((vhost) => {
       const [subdomain, port] = vhost.split(':');
       return { subdomain, port: parseInt(port) };
     });
