@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: proxygram-server
-          image: ghcr.io/proxy-gram/server:v0.0.35
+          image: ghcr.io/proxy-gram/server:v0.0.36
           imagePullPolicy: Always
           envFrom:
             - secretRef:
