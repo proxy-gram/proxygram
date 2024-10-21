@@ -45,7 +45,7 @@ spec:
                 name: proxygram-server
                 port:
                   number: 80
-  tls:
-    - hosts:
-        - proxygr.am
-      secretName: tls-proxygram-server-http01
+#  tls:
+#    - hosts:
+#        - proxygr.am
+#      secretName: tls-proxygram-server-http01

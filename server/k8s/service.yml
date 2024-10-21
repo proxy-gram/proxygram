@@ -8,6 +8,11 @@ spec:
   selector:
     app: proxygram-server
   ports:
-    - protocol: TCP
+    - name: default
+      protocol: TCP
       port: 80
       targetPort: 3000
+    - name: proxied-tcp-9000
+      port: 9000
+      targetPort: 3000
+      protocol: TCP
