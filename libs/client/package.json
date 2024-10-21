@@ -4,6 +4,9 @@
   "dependencies": {},
   "type": "commonjs",
   "main": "./index.cjs",
+  "publishConfig": {
+    "access": "public"
+  },
   "bin": {
     "proxygram": "./index.cjs"
   }
