@@ -1,3 +1,15 @@
+## 0.0.36 (2024-10-21)
+
+
+### 🩹 Fixes
+
+- remove declarations ([99460b4](https://github.com/proxy-gram/proxygram/commit/99460b4))
+- create pr with correct messages ([ed997a4](https://github.com/proxy-gram/proxygram/commit/ed997a4))
+
+### ❤️  Thank You
+
+- omics42
+
 ## 0.0.35 (2024-10-21)
 
 
