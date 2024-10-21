@@ -1,3 +1,14 @@
+## 0.0.35 (2024-10-21)
+
+
+### 🩹 Fixes
+
+- add correct repo ([cabe11d](https://github.com/proxy-gram/proxygram/commit/cabe11d))
+
+### ❤️  Thank You
+
+- omics42
+
 ## 0.0.34 (2024-10-21)
 
 

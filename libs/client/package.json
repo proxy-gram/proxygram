@@ -1,6 +1,6 @@
 {
   "name": "@proxy-gram/client",
-  "version": "0.0.34",
+  "version": "0.0.35",
   "dependencies": {},
   "type": "commonjs",
   "main": "./index.cjs",
