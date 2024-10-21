@@ -7,6 +7,9 @@
   "publishConfig": {
     "access": "public"
   },
+  "repository": {
+    "url": "https://github.com/proxy-gram/proxygram"
+  },
   "bin": {
     "proxygram": "./index.cjs"
   }
