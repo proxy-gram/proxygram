@@ -1,3 +1,14 @@
+## 0.0.34 (2024-10-21)
+
+
+### 🩹 Fixes
+
+- add package publishConfig ([609607a](https://github.com/proxy-gram/proxygram/commit/609607a))
+
+### ❤️  Thank You
+
+- omics42
+
 ## 0.0.33 (2024-10-21)
 
 
