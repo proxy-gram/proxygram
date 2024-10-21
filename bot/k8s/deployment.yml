@@ -14,8 +14,8 @@ spec:
         app: proxygram-bot
     spec:
       containers:
-        - name: proxygram-server
-          image: ghcr.io/proxy-gram/bot:0.0.19
+        - name: proxygram-bot
+          image: ghcr.io/proxy-gram/bot:0.0.25
           imagePullPolicy: Always
           envFrom:
             - secretRef:

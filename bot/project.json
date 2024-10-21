@@ -54,27 +54,26 @@
         }
       }
     },
-    "docker-build": {
-      "dependsOn": ["build"],
-      "command": "docker build -f bot/Dockerfile . -t bot"
-    },
     "container": {
       "executor": "@nx-tools/nx-container:build",
-      "dependsOn": ["build"],
+      "dependsOn": [
+        "build"
+      ],
       "options": {
         "engine": "docker",
+        "push": true,
         "metadata": {
-          "images": ["bot"],
-          "load": true,
+          "images": [
+            "ghcr.io/proxy-gram/bot"
+          ],
           "tags": [
-            "type=schedule",
-            "type=ref,event=branch",
-            "type=ref,event=tag",
-            "type=ref,event=pr",
-            "type=sha,prefix=sha-"
+            "type=semver,pattern={{version}}"
           ]
         }
       }
+    },
+    "nx-release-publish": {
+      "command": "nx run bot:container"
     }
   }
 }
