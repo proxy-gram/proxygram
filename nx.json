@@ -43,10 +43,19 @@
     }
   ],
   "release": {
+    "groups": {
+      "backend": {
+        "projects": ["server", "bot"],
+        "projectsRelationship": "fixed"
+      },
+      "frontend": {
+        "projects": ["client"]
+
+      }
+    },
     "version": {
       "preVersionCommand": "yarn nx run-many -t build"
     },
-    "projectsRelationship": "independent",
-    "projects": "server"
+    "projectsRelationship": "fixed"
   }
 }
