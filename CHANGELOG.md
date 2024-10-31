@@ -1,3 +1,15 @@
+## 0.0.38 (2024-10-31)
+
+
+### 🩹 Fixes
+
+- change proxied tcp target port [skip ci] ([25dba8c](https://github.com/proxy-gram/proxygram/commit/25dba8c))
+- change npm package name ([d4d12e2](https://github.com/proxy-gram/proxygram/commit/d4d12e2))
+
+### ❤️  Thank You
+
+- omics42
+
 ## 0.0.37 (2024-10-31)
 
 
