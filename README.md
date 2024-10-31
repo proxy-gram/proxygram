@@ -1,78 +1,54 @@
-# ProxygramTs
+# Proxygram
 
+Inspired by [Jeff's multiplexing explanation](https://dev.to/progrium/the-history-and-future-of-socket-level-multiplexing-1d5n) and the [original localtunnel](https://github.com/progrium/localtunnel),
+Proxygram allows you to expose multiple tcp services from a local machine to the internet with static address.
+It's tailored specifically to help people get started with building [Telegram mini apps](https://core.telegram.org/bots/webapps) without an extra hustle of setting up a server.
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+## How it works
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is almost ready ✨.
+Under the hood, proxygram utilises websockets (I plan to migrate to QUIC once it's implemented for the NodeJS) to establish a connection between your machine and the server. The server then routes the incoming requests to the appropriate websocket connection based on
+the subdomain of the request. With the help of [tiny protocol](libs/utils/src/lib/protocol.ts) both proxygram server and client frame incoming tcp packets into websocket messages and vice versa, and multiplex them into a single websocket connection.
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/getting-started/intro#learn-nx?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
+## Getting started
+To get started with proxygram, you need to receive a token from the [ProxygramBot](https://t.me/DidntKnowProxygramTakenBot).
 
-## Finish your CI setup
-
-[Click here to finish setting up your workspace!](https://cloud.nx.app/connect/t75EvUlIrx)
-
-
-## Run tasks
-
-To run tasks with Nx use:
-
-```sh
-npx nx <target> <project-name>
+Run the proxygram cli with token and vhost configuration
+```shell
+npx proxygram -t {{TOKEN_FROM_BOT}} -H {{VHOST_CONFIG}}
+```
+or put the token and vhost configuration in the `.env` file
+```text
+PROXYGRAM_TOKEN={{TOKEN_FROM_BOT}}
+PROXYGRAM_VHOSTS={{VHOST_CONFIG}}
+```
+and run the cli without arguments
+```shell
+npx proxygram
 ```
 
-For example:
-
-```sh
-npx nx build myproject
+## Vhost configuration
+This part is important as it tells the proxygram server how to route incoming requests to the appropriate websocket connection.
+Vhost config consists of a list of vhost entries separated by a comma. Each vhost entry consists of a subdomain and a port separated by a colon.
+```shell
+PROXYGRAM_VHOSTS="subdomain1:port1,subdomain2:port2"
 ```
+ports should be the same as the ports of the services you want to expose.
 
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
+Subdomains should be unique and (!!!IMPORTANT!!!) should have suffix `-{{YOUR_TELEGRAM_USERNAME}}` otherwise the server will reject the connection.
 
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+## Example
+Let's say you have the following services running on your machine:
+- A webpack dev server on port `4200`
+- A nodejs server on port `3000`
 
-## Add new projects
+and your telegram username is `testuser`.
 
-While you could add new projects to your workspace manually, you might want to leverage [Nx plugins](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) and their [code generation](https://nx.dev/features/generate-code?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) feature.
-
-To install a new plugin you can use the `nx add` command. Here's an example of adding the React plugin:
-```sh
-npx nx add @nx/react
+Then your vhost configuration could look like this:
+```shell
+PROXYGRAM_VHOSTS="frontend-testuser:4200,backend-testuser:3000"
 ```
+proxygram will then route incoming requests to 
+- `https://frontend-testuser.proxygr.am` to the webpack dev server 
 
-Use the plugin's generator to create new projects. For example, to create a new React app or library:
-
-```sh
-# Genenerate an app
-npx nx g @nx/react:app demo
-
-# Generate a library
-npx nx g @nx/react:lib some-lib
-```
-
-You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx list <plugin-name>` to learn about more specific capabilities of a particular plugin. Alternatively, [install Nx Console](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) to browse plugins and generators in your IDE.
-
-[Learn more about Nx plugins &raquo;](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) | [Browse the plugin registry &raquo;](https://nx.dev/plugin-registry?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Install Nx Console
-
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
-
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Useful links
-
-Learn more:
-
-- [Learn more about this workspace setup](https://nx.dev/getting-started/intro#learn-nx?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-And join the Nx community:
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+and 
+- `https://backend-testuser.proxygr.am` to the nodejs server.

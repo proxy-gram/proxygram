@@ -1,14 +1,17 @@
 import 'dotenv/config';
-import { connect } from 'node:net';
+import { Socket } from 'node:net';
+import type { VhostsConfig } from './config';
+import { Logger } from 'winston';
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import {
-  createHandshake,
-  proxyRequest,
-  ProxygramProtocol,
+  decodeFrame,
+  processProxyStart,
+  ProxygramFramesFactory,
+  ProxygramSignals,
   Vhost,
   VhostStore,
 } from '@proxygram/utils';
-import type { VhostsConfig } from './config';
-import { Logger } from 'winston';
+import { WebSocket } from 'ws';
 
 export function connectToServer({
   vhostsConfig,
@@ -24,6 +27,9 @@ export function connectToServer({
   proxygramPort: number;
 }) {
   const vhostStore = new VhostStore();
+  const routingTable = new Map<number, Socket>();
+
+  logger.debug(`Vhosts: %o`, vhostsConfig);
 
   vhostsConfig.forEach((vhost) => {
     vhostStore.addVhost(
@@ -33,42 +39,42 @@ export function connectToServer({
       })
     );
   });
-  const subdomains = vhostsConfig.map((vhost) => vhost.subdomain);
-  const handshake = createHandshake(proxygramToken, subdomains);
-  logger.info(handshake);
 
-  const connection = connect(
-    {
-      host: proxygramHost,
-      port: proxygramPort,
-      keepAlive: true,
-      keepAliveInitialDelay: 1000,
-    },
-    () => {
-      connection.write(handshake);
-      connection.on('data', (data) => {
-        if (data.toString().startsWith(ProxygramProtocol.KEEPALIVE)) {
-          logger.debug('Server is alive!');
-        } else if (
-          data.toString().startsWith(ProxygramProtocol.INVALID_HANDSHAKE)
-        ) {
-          logger.error('Handshake error:', data.toString());
-          connection.destroy();
-        } else {
-          proxyRequest({
-            request: data,
-            vhostStore: vhostStore,
-            socket: connection,
-            logger,
-          });
-        }
-      });
-      connection.on('end', () => {
-        logger.debug('Disconnected from server');
+  const subdomains = vhostsConfig.map((vhost) => vhost.subdomain).join();
+  const handshake = ProxygramFramesFactory.createHandshake(
+    Buffer.from(proxygramToken, 'hex'),
+    Buffer.from(subdomains)
+  );
+
+  const wsConn = new WebSocket(`ws://${proxygramHost}:${proxygramPort}`);
+  wsConn.binaryType = 'nodebuffer';
+  wsConn.once('open', () => {
+    wsConn.send(handshake);
+  });
+
+  wsConn.on('message', (data) => {
+    const decoded = decodeFrame(data as Buffer);
+    if (decoded?.signal === ProxygramSignals.KEEPALIVE) {
+      logger.debug('Server is alive!');
+    } else if (decoded?.signal === ProxygramSignals.INVALID_HANDSHAKE) {
+      logger.error(
+        'Invalid handshake, make sure you are using the correct token'
+      );
+      wsConn.close();
+    } else if (decoded?.signal === ProxygramSignals.SOCKET_DATA) {
+      const { socketId, destination, data } = decoded.data;
+
+      logger.debug(`Received from ${socketId.readUInt32BE()}`);
+
+      processProxyStart({
+        logger,
+        ws: wsConn,
+        data,
+        destination,
+        vhostStore,
+        socketId,
+        routingTable,
       });
     }
-  );
-  connection.on('error', (error) => {
-    logger.error('Failed to connect to server: %j', error);
   });
 }

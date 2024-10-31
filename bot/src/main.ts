@@ -1,6 +1,7 @@
 import { config } from './config';
 import { Bot, Context } from 'grammy';
 import { createLogger, Cypher } from '@proxygram/utils';
+
 import * as process from 'node:process';
 
 const logger = createLogger('bot');
@@ -16,10 +17,10 @@ bot.command('key', async (ctx: Context) => {
     await ctx.reply('Not Supported');
     return;
   }
-  const encrypted = cipher.encrypt(username);
+  const encrypted = cipher.encryptBuffer(Buffer.from(username, 'utf-8'));
 
   await ctx
-    .reply(`Your key is \`${encrypted}\``, {
+    .reply(`Your key is \`${encrypted.toString('hex')}\``, {
       parse_mode: 'MarkdownV2',
     })
     .catch((err) => {
@@ -38,7 +39,7 @@ if (process.env.NODE_ENV !== 'production') {
     }
 
     logger.debug('Text: %s', text);
-    const decrypted = cipher.decrypt(text);
+    const decrypted = cipher.decryptBuffer(Buffer.from(text, 'hex'));
 
     logger.debug('Decrypted: %s', decrypted);
     await ctx.reply(`Your username is ${decrypted}`);

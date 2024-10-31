@@ -1,64 +1,102 @@
 import 'dotenv/config';
-import { createServer } from 'node:net';
-
+import { createServer, Socket } from 'node:net';
 import {
   createLogger,
-  parseHandshake,
-  proxyRequest,
-  Vhost,
   VhostStore,
-  Cypher, ProxygramProtocol
+  Cypher,
+  tryParseFrame,
+  proxyStart,
 } from '@proxygram/utils';
 
 import { config } from './config';
+import { WebSocketServer } from 'ws';
 
 const cypher = new Cypher(config.signingKey);
 const logger = createLogger('server');
 const vhostStore = new VhostStore();
+const routingTable = new Map<number, Socket>();
+const webSocketServer = new WebSocketServer({ port: 3300 });
 
-const tcpServer = createServer({
-  keepAlive: true,
-  keepAliveInitialDelay: 1000,
+webSocketServer.on('connection', (ws) => {
+  ws.binaryType = 'nodebuffer';
+
+  // Grace period for handshake
+  const timeout = setTimeout(() => {
+    logger.debug(`No handshake received, terminating connection`);
+    ws.terminate();
+  }, 1000);
+
+  ws.on('handshake', () => {
+    clearTimeout(timeout);
+  });
+
+  ws.on('message', (message) => {
+    if (!(message instanceof Buffer)) {
+      logger.debug(`Received an invalid message`);
+      ws.terminate();
+      return;
+    }
+
+    const frameParseResult = tryParseFrame({
+      logger,
+      ws,
+      data: message,
+      cypher,
+      vhostStore,
+      routingTable,
+    });
+
+    if (!frameParseResult) {
+      logger.error('Error parsing frame');
+      ws.terminate();
+      return;
+    }
+  });
 });
+
+const tcpServer = createServer();
 
 tcpServer.listen(3000, () => {
   logger.info('Server is listening on port 3000');
 });
 
 tcpServer.on('connection', (socket) => {
-  logger.debug(`New connection from: ${socket.remoteAddress}`);
-  socket.once('data', (data) => {
+  const remotePort = socket.remotePort;
+  if (!remotePort) {
+    logger.error('No remote port, dropping connection');
+    socket.destroy();
+    return;
+  }
+
+  routingTable.set(remotePort, socket);
+  logger.debug(
+    `Connection from ${socket.remoteAddress}:${remotePort} to ${socket.localAddress}:${socket.localPort}`
+  );
+
+  socket.on('data', (data) => {
     logger.debug(
-      `Received data from ${socket.remoteAddress} with length: ${data.length}`
+      `--Received data from ${remotePort} with length %s`,
+      data.length
     );
-
-    if (data.toString().startsWith(ProxygramProtocol.HANDSHAKE)) {
-      logger.debug(
-        `Received handshake: ${data.toString()} from ${socket.remoteAddress}`
-      );
-      let parsed: ReturnType<typeof parseHandshake>;
-
-      try {
-        parsed = parseHandshake(data.toString(), cypher);
-      } catch (error: unknown) {
-        if (error instanceof Error) {
-          logger.error('Error:', error);
-          socket.write(`PROXYGRAM_INVALID_HANDSHAKE/${error.message}`);
-        }
-        socket.end();
-        return;
-      }
-
-      socket.setKeepAlive(true, 1000);
-      socket.setMaxListeners(1);
-      parsed.subdomains.forEach((subdomain) => {
-        logger.debug(`Adding vhost: ${subdomain}`);
-        vhostStore.addVhost(Vhost.fromSocket(subdomain, socket));
-      });
-      socket.write('PROXYGRAM_KEEPALIVE');
-    } else {
-      proxyRequest({ request: data, vhostStore: vhostStore, socket, logger });
-    }
+    logger.debug(`--Proxying data from ${remotePort}`);
+    proxyStart({ logger, socket, vhostStore, data, socketId: remotePort });
+    socket.resume();
+  });
+  socket.on('close', (err) => {
+    logger.debug(`Connection closed from ${remotePort}, had error: ${err}`);
+    routingTable.delete(remotePort);
+  });
+  socket.on('end', () => {
+    logger.debug(`Connection ended from ${remotePort}`);
+    routingTable.delete(remotePort);
+  });
+  socket.on('error', (err) => {
+    logger.error(`Error in connection from ${remotePort}: ${err}`);
+    routingTable.delete(remotePort);
+  });
+  socket.on('timeout', () => {
+    logger.debug(`Connection timed out from ${remotePort}`);
+    routingTable.delete(remotePort);
   });
 });
 

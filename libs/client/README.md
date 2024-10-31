@@ -1,11 +1,43 @@
-# client
+## Getting started
+To get started with proxygram, you need to receive a token from the [ProxygramBot](https://t.me/DidntKnowProxygramTakenBot).
 
-This library was generated with [Nx](https://nx.dev).
+Run the proxygram cli with token and vhost configuration
+```shell
+npx proxygram -t {{TOKEN_FROM_BOT}} -H {{VHOST_CONFIG}}
+```
+or put the token and vhost configuration in the `.env` file
+```text
+PROXYGRAM_TOKEN={{TOKEN_FROM_BOT}}
+PROXYGRAM_VHOSTS={{VHOST_CONFIG}}
+```
+and run the cli without arguments
+```shell
+npx proxygram
+```
 
-## Building
+## Vhost configuration
+This part is important as it tells the proxygram server how to route incoming requests to the appropriate websocket connection.
+Vhost config consists of a list of vhost entries separated by a comma. Each vhost entry consists of a subdomain and a port separated by a colon.
+```shell
+PROXYGRAM_VHOSTS="subdomain1:port1,subdomain2:port2"
+```
+ports should be the same as the ports of the services you want to expose.
 
-Run `nx build client` to build the library.
+Subdomains should be unique and (!!!IMPORTANT!!!) should have suffix `-{{YOUR_TELEGRAM_USERNAME}}` otherwise the server will reject the connection.
 
-## Running unit tests
+## Example
+Let's say you have the following services running on your machine:
+- A webpack dev server on port `4200`
+- A nodejs server on port `3000`
 
-Run `nx test client` to execute the unit tests via [Jest](https://jestjs.io).
+and your telegram username is `testuser`.
+
+Then your vhost configuration could look like this:
+```shell
+PROXYGRAM_VHOSTS="frontend-testuser:4200,backend-testuser:3000"
+```
+proxygram will then route incoming requests to
+- `https://frontend-testuser.proxygr.am` to the webpack dev server
+
+and
+- `https://backend-testuser.proxygr.am` to the nodejs server.

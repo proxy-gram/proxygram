@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 import 'dotenv/config';
 import { Command, InvalidOptionArgumentError } from 'commander';
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import { createLogger } from '@proxygram/utils';
 import { connectToServer } from './connectToServer';
 import { config, VhostsConfig } from './config';
+import { verifyVhostConfig } from './verifyVhostConfig';
 
 const logger = createLogger('client');
 const program = new Command();
@@ -44,10 +46,14 @@ program
       );
       process.exit(1);
     }
-    const vhostsConfig: VhostsConfig = vhosts.map((vhost) => {
-      const [subdomain, port] = vhost.split(':');
-      return { subdomain, port: parseInt(port) };
-    });
+    let vhostsConfig: VhostsConfig;
+
+    try {
+      vhostsConfig = verifyVhostConfig(vhosts);
+    } catch (error: any) {
+      logger.error(error.message);
+      process.exit(1);
+    }
 
     const proxygramHost = config.proxygramHost;
     const proxygramPort = config.proxygramPort;
