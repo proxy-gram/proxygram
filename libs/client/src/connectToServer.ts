@@ -56,6 +56,13 @@ export function connectToServer({
     const decoded = decodeFrame(data as Buffer);
     if (decoded?.signal === ProxygramSignals.KEEPALIVE) {
       logger.debug('Server is alive!');
+      logger.info(`Successfully connected to proxygram server.
+      Now proxying: ${vhostsConfig
+        .map(
+          ({ subdomain, port }) =>
+            `https://${subdomain}.proxygr.am  -->  127.0.0.1:${port}`
+        )
+        .join(', ')}`);
     } else if (decoded?.signal === ProxygramSignals.INVALID_HANDSHAKE) {
       logger.error(
         'Invalid handshake, make sure you are using the correct token'
