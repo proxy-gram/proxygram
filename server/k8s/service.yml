@@ -14,5 +14,5 @@ spec:
       targetPort: 3000
     - name: proxied-tcp-9000
       port: 9000
-      targetPort: 3000
+      targetPort: 3300
       protocol: TCP
