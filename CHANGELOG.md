@@ -1,3 +1,14 @@
+## 0.0.37 (2024-10-31)
+
+
+### 🚀 Features
+
+- add protocol and use websockets for multiplexing ([d644e31](https://github.com/proxy-gram/proxygram/commit/d644e31))
+
+### ❤️  Thank You
+
+- omics42
+
 ## 0.0.36 (2024-10-21)
 
 
