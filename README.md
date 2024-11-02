@@ -52,3 +52,5 @@ proxygram will then route incoming requests to
 
 and 
 - `https://backend-testuser.proxygr.am` to the nodejs server.
+
+You can also check the [example project](https://github.com/proxy-gram/mini-apps-starter)
